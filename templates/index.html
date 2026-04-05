@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <p class="hero-text">Discover devices on your network. Scan, inspect, and export.</p>
+  <div class="hero-actions">
+    <div class="network-input-wrap">
+      <label for="cidr">Network (CIDR)</label>
+      <input type="text" id="cidr" placeholder="e.g. 192.168.1.0/24" class="input-cidr">
+      <button type="button" id="use-local" class="btn btn-ghost">Use my network</button>
+    </div>
+    <label class="checkbox-wrap">
+      <input type="checkbox" id="port-scan" checked> Port scan (for risk score)
+    </label>
+    <button type="button" id="btn-scan" class="btn btn-primary">
+      <span class="btn-icon">▶</span> Scan network
+    </button>
+  </div>
+  <p id="scan-status" class="status-text"></p>
+  {% if not scapy_ok %}
+  <p class="warning-box">Scapy is not available. Install dependencies and run with sufficient privileges (e.g. sudo on Linux for raw sockets).</p>
+  {% endif %}
+</section>
+
+<section id="devices" class="section">
+  <h2 class="section-title">Devices</h2>
+  <div class="table-wrap">
+    <table class="device-table" id="device-table">
+      <thead>
+        <tr>
+          <th>IP</th>
+          <th>MAC</th>
+          <th>Device name</th>
+          <th>Vendor</th>
+          <th>Risk</th>
+          <th>Open ports</th>
+          <th>Packets ↑ / ↓</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="device-tbody">
+        <tr><td colspan="8" class="empty-row">Run a scan to see devices.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="topology" class="section">
+  <h2 class="section-title">Network topology</h2>
+  <p class="section-desc">Visual map of discovered devices (gateway and nodes).</p>
+  <div id="topology-container" class="topology-container"></div>
+</section>
+
+<section id="stats" class="section">
+  <h2 class="section-title">Packet statistics (simulated)</h2>
+  <p class="section-desc">Per-device packet counts shown in the table above.</p>
+</section>
+
+<section class="section export-section">
+  <h2 class="section-title">Export</h2>
+  <button type="button" id="btn-export-pdf" class="btn btn-secondary">Download scan report (PDF)</button>
+  <p class="hint">Uses current device list from last scan.</p>
+</section>
+
+<!-- Device Details Modal -->
+<div id="device-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content glass-panel">
+    <div class="modal-header">
+      <h3 id="modal-title">Device Details</h3>
+      <button type="button" class="close-btn" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p id="modal-status">Loading extensive details...</p>
+      <div id="modal-details" style="display: none;">
+        <div class="detail-grid">
+          <div class="detail-item"><span class="detail-label">IP Address</span><span id="md-ip"></span></div>
+          <div class="detail-item"><span class="detail-label">MAC Address</span><span id="md-mac"></span></div>
+          <div class="detail-item"><span class="detail-label">Vendor</span><span id="md-vendor"></span></div>
+          <div class="detail-item"><span class="detail-label">Device Type</span><span id="md-type"></span></div>
+          <div class="detail-item"><span class="detail-label">Assumed OS</span><span id="md-os"></span></div>
+        </div>
+        <h4 class="sub-title">Services & Banners</h4>
+        <ul id="md-services" class="services-list"></ul>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="modal-block-btn" class="btn btn-primary" onclick="toggleBlockFromModal()">Block Device</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

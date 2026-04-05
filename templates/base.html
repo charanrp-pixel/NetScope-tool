@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}NetScope{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="header">
+    <div class="brand">
+      <span class="brand-icon">◇</span>
+      <h1 class="brand-name">NetScope</h1>
+      <span class="brand-tag">Network analysis</span>
+    </div>
+    <nav class="nav">
+      <a href="#devices" class="nav-link">Devices</a>
+      <a href="#topology" class="nav-link">Topology</a>
+      <a href="#stats" class="nav-link">Stats</a>
+    </nav>
+  </header>
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">
+    <span>NetScope</span> — Inspired by Wireshark · Python + Scapy + Flask
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,8 @@
+# NetScope - Network analysis dashboard
+# Python 3.8+
+
+Flask>=2.0.0
+Scapy>=2.5.0
+netaddr>=0.10.0
+reportlab>=4.0.0
+mac-vendor-lookup>=0.1.12
