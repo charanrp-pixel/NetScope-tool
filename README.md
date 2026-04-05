@@ -1,6 +1,6 @@
 # NetScope
 
-A network analysis dashboard inspired by Wireshark. Discover devices on your LAN, view IP/MAC/vendor, risk scores, and export reports.
+A network analysis dashboard. Discover devices on your LAN, view IP/MAC/vendor, risk scores, and export reports.
 
 **Tech stack:** Python, Scapy, Flask.
 
