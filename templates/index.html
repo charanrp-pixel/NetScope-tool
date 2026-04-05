@@ -55,6 +55,48 @@
   <p class="section-desc">Per-device packet counts shown in the table above.</p>
 </section>
 
+<section id="traffic-monitor" class="section">
+  <h2 class="section-title">Traffic Monitor</h2>
+  <p class="section-desc">Monitor network traffic for blocked devices. Requires administrator privileges.</p>
+  <div id="monitor-controls" style="margin-bottom: 20px;">
+    <div id="monitored-devices-list" style="margin-bottom: 10px;"></div>
+    <button type="button" id="btn-refresh-monitored" class="btn btn-ghost">Refresh Monitored Devices</button>
+  </div>
+  <div id="traffic-data" class="traffic-data-container" style="display: none;">
+    <h3 id="traffic-title">Traffic Data for <span id="traffic-ip"></span></h3>
+    <div class="traffic-stats">
+      <div class="stat-item">
+        <span class="stat-label">Total Packets:</span>
+        <span id="total-packets" class="stat-value">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Total Bytes:</span>
+        <span id="total-bytes" class="stat-value">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Packets/sec:</span>
+        <span id="packets-per-sec" class="stat-value">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Bytes/sec:</span>
+        <span id="bytes-per-sec" class="stat-value">0</span>
+      </div>
+    </div>
+    <div class="protocol-breakdown">
+      <h4>Protocol Breakdown</h4>
+      <div id="protocol-stats"></div>
+    </div>
+    <div class="recent-packets">
+      <h4>Recent Packets</h4>
+      <div id="packet-list" class="packet-list"></div>
+    </div>
+    <div class="traffic-controls">
+      <button type="button" id="btn-stop-monitor" class="btn btn-secondary">Stop Monitoring</button>
+      <button type="button" id="btn-clear-data" class="btn btn-ghost">Clear Data</button>
+    </div>
+  </div>
+</section>
+
 <section class="section export-section">
   <h2 class="section-title">Export</h2>
   <button type="button" id="btn-export-pdf" class="btn btn-secondary">Download scan report (PDF)</button>
@@ -84,6 +126,7 @@
     </div>
     <div class="modal-footer">
       <button type="button" id="modal-block-btn" class="btn btn-primary" onclick="toggleBlockFromModal()">Block Device</button>
+      <button type="button" id="modal-monitor-btn" class="btn btn-secondary" onclick="toggleMonitorFromModal()">Monitor Traffic</button>
     </div>
   </div>
 </div>

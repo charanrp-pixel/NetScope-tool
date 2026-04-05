@@ -15,6 +15,13 @@ from network_scanner import (
 from pdf_export import build_pdf
 from network_blocker import start_block, stop_block, get_blocked_ips
 from device_profiler import profile_device
+from traffic_monitor import (
+    start_traffic_monitor,
+    stop_traffic_monitor,
+    get_traffic_data,
+    get_monitored_ips,
+    clear_traffic_data
+)
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "netscope-dev"
@@ -164,6 +171,60 @@ def api_device_details():
     profile["is_blocked"] = ip in get_blocked_ips()
     
     return jsonify(profile)
+
+
+@app.route("/api/start-traffic-monitor", methods=["POST"])
+def api_start_traffic_monitor():
+    """Start monitoring network traffic for a specific IP."""
+    data = request.get_json() or {}
+    ip = data.get("ip")
+    
+    if not ip:
+        return jsonify({"success": False, "error": "IP address is required."}), 400
+        
+    success, msg = start_traffic_monitor(ip)
+    return jsonify({"success": success, "message": msg, "target": ip})
+
+
+@app.route("/api/stop-traffic-monitor", methods=["POST"])
+def api_stop_traffic_monitor():
+    """Stop monitoring network traffic for a specific IP."""
+    data = request.get_json() or {}
+    ip = data.get("ip")
+    
+    if not ip:
+        return jsonify({"success": False, "error": "IP address is required."}), 400
+        
+    success, msg = stop_traffic_monitor(ip)
+    return jsonify({"success": success, "message": msg, "target": ip})
+
+
+@app.route("/api/traffic-data/<ip>")
+def api_traffic_data(ip):
+    """Get current traffic statistics for a monitored IP."""
+    data = get_traffic_data(ip)
+    if data is None:
+        return jsonify({"error": "No traffic data available for this IP."}), 404
+    return jsonify(data)
+
+
+@app.route("/api/monitored-devices")
+def api_monitored_devices():
+    """Return list of IPs currently being monitored."""
+    return jsonify({"monitored_ips": get_monitored_ips()})
+
+
+@app.route("/api/clear-traffic-data", methods=["POST"])
+def api_clear_traffic_data():
+    """Clear traffic data for a specific IP."""
+    data = request.get_json() or {}
+    ip = data.get("ip")
+    
+    if not ip:
+        return jsonify({"success": False, "error": "IP address is required."}), 400
+        
+    success, msg = clear_traffic_data(ip)
+    return jsonify({"success": success, "message": msg, "target": ip})
 
 
 if __name__ == "__main__":

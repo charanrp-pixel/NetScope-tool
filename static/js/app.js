@@ -11,6 +11,8 @@
   let lastCidr = null;
   let topologyNetwork = null;
   let blockedIps = [];
+  let monitoredIps = [];
+  let currentTrafficIp = null;
 
   window.toggleBlock = async function(ip, action) {
     try {
@@ -50,6 +52,154 @@
     toggleBlock(currentModalIp, isBlocked ? 'unblock' : 'block');
   };
 
+  window.toggleMonitorFromModal = async function() {
+    if(!currentModalIp) return;
+    const isMonitored = monitoredIps.includes(currentModalIp);
+    if (isMonitored) {
+      await stopTrafficMonitor(currentModalIp);
+    } else {
+      await startTrafficMonitor(currentModalIp);
+    }
+    updateModalMonitorButton();
+  };
+
+  async function startTrafficMonitor(ip) {
+    try {
+      const res = await fetch('/api/start-traffic-monitor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        alert("Error: " + data.error);
+        return false;
+      }
+      monitoredIps.push(ip);
+      updateMonitoredDevicesList();
+      return true;
+    } catch(e) {
+      alert("Error: " + e.message);
+      return false;
+    }
+  }
+
+  async function stopTrafficMonitor(ip) {
+    try {
+      const res = await fetch('/api/stop-traffic-monitor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        alert("Error: " + data.error);
+        return false;
+      }
+      monitoredIps = monitoredIps.filter(mip => mip !== ip);
+      updateMonitoredDevicesList();
+      if (currentTrafficIp === ip) {
+        hideTrafficData();
+      }
+      return true;
+    } catch(e) {
+      alert("Error: " + e.message);
+      return false;
+    }
+  }
+
+  function updateModalMonitorButton() {
+    if (!currentModalIp) return;
+    const btn = document.getElementById('modal-monitor-btn');
+    const isMonitored = monitoredIps.includes(currentModalIp);
+    btn.textContent = isMonitored ? 'Stop Monitoring' : 'Monitor Traffic';
+    btn.className = isMonitored ? 'btn btn-secondary' : 'btn btn-primary';
+  }
+
+  function updateMonitoredDevicesList() {
+    const container = document.getElementById('monitored-devices-list');
+    if (monitoredIps.length === 0) {
+      container.innerHTML = '<p>No devices currently being monitored.</p>';
+      return;
+    }
+    
+    container.innerHTML = '<h4>Monitored Devices:</h4>' + monitoredIps.map(ip => 
+      `<div class="monitored-device">
+        <span>${ip}</span>
+        <button class="btn btn-ghost btn-sm" onclick="viewTrafficData('${ip}')">View Data</button>
+        <button class="btn btn-ghost btn-sm" onclick="stopTrafficMonitor('${ip}')">Stop</button>
+      </div>`
+    ).join('');
+  }
+
+  window.viewTrafficData = function(ip) {
+    currentTrafficIp = ip;
+    loadTrafficData(ip);
+    document.getElementById('traffic-data').style.display = 'block';
+    document.getElementById('traffic-ip').textContent = ip;
+  };
+
+  function hideTrafficData() {
+    document.getElementById('traffic-data').style.display = 'none';
+    currentTrafficIp = null;
+  }
+
+  async function loadTrafficData(ip) {
+    try {
+      const res = await fetch(`/api/traffic-data/${ip}`);
+      const data = await res.json();
+      
+      if (res.status === 404) {
+        document.getElementById('total-packets').textContent = '0';
+        document.getElementById('total-bytes').textContent = '0';
+        document.getElementById('packets-per-sec').textContent = '0';
+        document.getElementById('bytes-per-sec').textContent = '0';
+        document.getElementById('protocol-stats').innerHTML = '<p>No data available yet.</p>';
+        document.getElementById('packet-list').innerHTML = '<p>No packets captured yet.</p>';
+        return;
+      }
+      
+      // Update statistics
+      document.getElementById('total-packets').textContent = data.total_packets || 0;
+      document.getElementById('total-bytes').textContent = formatBytes(data.total_bytes || 0);
+      document.getElementById('packets-per-sec').textContent = (data.packets_per_second || 0).toFixed(2);
+      document.getElementById('bytes-per-sec').textContent = formatBytes(data.bytes_per_second || 0) + '/s';
+      
+      // Update protocol breakdown
+      const protocolStats = document.getElementById('protocol-stats');
+      const protocols = data.protocols || {};
+      protocolStats.innerHTML = Object.entries(protocols).map(([protocol, count]) => 
+        `<div class="protocol-item">
+          <span class="protocol-name">${protocol}</span>
+          <span class="protocol-count">${count}</span>
+        </div>`
+      ).join('');
+      
+      // Update recent packets
+      const packetList = document.getElementById('packet-list');
+      const packets = data.recent_packets || [];
+      packetList.innerHTML = packets.slice(-10).reverse().map(packet => 
+        `<div class="packet-item">
+          <span class="packet-time">${new Date(packet.timestamp * 1000).toLocaleTimeString()}</span>
+          <span class="packet-info">${packet.src_ip}:${packet.src_port || 'N/A'} → ${packet.dst_ip}:${packet.dst_port || 'N/A'}</span>
+          <span class="packet-protocol">${packet.protocol}</span>
+          <span class="packet-size">${formatBytes(packet.size)}</span>
+        </div>`
+      ).join('');
+      
+    } catch(e) {
+      console.error('Error loading traffic data:', e);
+    }
+  }
+
+  function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
   window.openDeviceModal = async function(ip) {
     const device = lastDevices.find(d => d.ip === ip);
     if(!device) return;
@@ -86,6 +236,8 @@
       const isBlockedNow = data.is_blocked;
       btn.textContent = isBlockedNow ? 'Unblock Device' : 'Block Device';
       btn.className = isBlockedNow ? 'btn btn-secondary' : 'btn btn-primary';
+      
+      updateModalMonitorButton();
       
       const sList = document.getElementById('md-services');
       if(!data.services || data.services.length === 0) {
@@ -250,6 +402,50 @@
       btnExportPdf.disabled = false;
     }
   });
+
+  // Traffic monitoring event listeners
+  document.getElementById('btn-refresh-monitored').addEventListener('click', async function() {
+    try {
+      const res = await fetch('/api/monitored-devices');
+      const data = await res.json();
+      monitoredIps = data.monitored_ips || [];
+      updateMonitoredDevicesList();
+    } catch(e) {
+      console.error('Error refreshing monitored devices:', e);
+    }
+  });
+
+  document.getElementById('btn-stop-monitor').addEventListener('click', function() {
+    if (currentTrafficIp) {
+      stopTrafficMonitor(currentTrafficIp);
+    }
+  });
+
+  document.getElementById('btn-clear-data').addEventListener('click', async function() {
+    if (!currentTrafficIp) return;
+    try {
+      const res = await fetch('/api/clear-traffic-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip: currentTrafficIp })
+      });
+      const data = await res.json();
+      if (data.success) {
+        loadTrafficData(currentTrafficIp);
+      } else {
+        alert("Error: " + data.error);
+      }
+    } catch(e) {
+      alert("Error: " + e.message);
+    }
+  });
+
+  // Auto-refresh traffic data every 5 seconds when viewing
+  setInterval(() => {
+    if (currentTrafficIp && document.getElementById('traffic-data').style.display !== 'none') {
+      loadTrafficData(currentTrafficIp);
+    }
+  }, 5000);
 
   useLocalBtn.click();
 })();

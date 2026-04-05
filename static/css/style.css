@@ -439,4 +439,145 @@ body {
   border-top: 1px solid var(--border);
   display: flex;
   justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Traffic Monitor Styles */
+.traffic-data-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.traffic-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-item {
+  background: var(--surface2);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.stat-label {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.protocol-breakdown, .recent-packets {
+  margin-bottom: 2rem;
+}
+
+.protocol-breakdown h4, .recent-packets h4 {
+  color: var(--text);
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+.protocol-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--border);
+}
+
+.protocol-name {
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.protocol-count {
+  background: var(--accent-dim);
+  color: var(--text);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.packet-list {
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.packet-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+
+.packet-item:last-child {
+  border-bottom: none;
+}
+
+.packet-time {
+  color: var(--text-muted);
+  min-width: 80px;
+}
+
+.packet-info {
+  flex: 1;
+  color: var(--text);
+}
+
+.packet-protocol {
+  background: var(--success);
+  color: var(--bg);
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.packet-size {
+  color: var(--accent);
+  min-width: 60px;
+  text-align: right;
+}
+
+.traffic-controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.monitored-device {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.5rem;
+}
+
+.monitored-device span {
+  flex: 1;
+  font-weight: 500;
 }
